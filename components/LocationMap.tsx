@@ -92,7 +92,7 @@ export default function LocationMap() {
               scrolling="no" 
               marginHeight={0} 
               marginWidth={0} 
-              src="https://maps.google.com/maps?q=14.892521168591774,-92.250983076492&hl=es&z=16&output=embed"
+              src="https://maps.google.com/maps?q=14.91021492791227,-92.26503010424285&hl=es&z=16&output=embed"
               className="absolute inset-0 w-full h-full"
               title="Ubicación Café Alejandría"
               aria-label="Mapa de ubicación de Café Alejandría"

@@ -56,8 +56,8 @@ export default function LocationMap() {
                 <div>
                   <h4 className="font-bold text-lg mb-1">Teléfono</h4>
                   <p className="text-stone-300">
-                    <a href="tel:+529621896327" className="hover:text-amber-500 transition-colors">
-                      962 189 6327
+                    <a href="tel:+529622229339" className="hover:text-amber-500 transition-colors">
+                      962 222 9339
                     </a>
                   </p>
                 </div>

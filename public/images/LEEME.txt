@@ -1,0 +1,6 @@
+Coloca tus imágenes en esta carpeta.
+Luego puedes usarlas en tu sitio web referenciándolas como:
+/images/nombre-de-tu-imagen.jpg
+
+Por ejemplo, si subes una foto llamada "cafe.jpg", la ruta será:
+/images/cafe.jpg

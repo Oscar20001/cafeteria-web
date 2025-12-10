@@ -67,6 +67,7 @@ export default function Navbar() {
             <Link href="#menu" className="block hover:text-amber-500 px-3 py-2 rounded-md text-base font-medium">Menú</Link>
             <Link href="/reservas" className="block hover:text-amber-500 px-3 py-2 rounded-md text-base font-medium">Reservas</Link>
             <Link href="/lealtad" className="block hover:text-amber-500 px-3 py-2 rounded-md text-base font-medium">Lealtad</Link>
+            <Link href="/order" className="block bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-md text-base font-bold mt-4 text-center shadow-lg">Ordenar Ahora</Link>
           </div>
         </div>
       )}

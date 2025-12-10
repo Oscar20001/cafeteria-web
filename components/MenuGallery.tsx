@@ -2,13 +2,12 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { FileText } from 'lucide-react';
 
 // 🔴 AQUÍ SE CONFIGURAN LAS IMÁGENES DEL MENÚ
-// Cuando tengas las URLs reales o los archivos en la carpeta public/, actualiza esta lista.
-const menuItems = Array.from({ length: 11 }).map((_, i) => ({
+const menuItems = Array.from({ length: 6 }).map((_, i) => ({
   id: i + 1,
   title: `Platillo ${i + 1}`,
-  // 🔴 REEMPLAZA ESTA URL CON LA RUTA DE TU IMAGEN (ej: "/images/menu-1.jpg")
   image: `https://placehold.co/600x800/png?text=Menu+Item+${i + 1}`, 
 }));
 
@@ -18,9 +17,20 @@ export default function MenuGallery() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-stone-800 mb-4 font-serif">Nuestro Menú</h2>
-          <p className="text-stone-600 max-w-2xl mx-auto">
+          <p className="text-stone-600 max-w-2xl mx-auto mb-8">
             Descubre nuestra selección de platillos y bebidas preparados con los mejores ingredientes.
           </p>
+          
+          {/* Botón para ver menú completo */}
+          <a 
+            href="/menu.pdf" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-8 py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-full shadow-lg hover:shadow-amber-500/30 transition-all transform hover:-translate-y-1"
+          >
+            <FileText className="mr-2 h-5 w-5" />
+            Ver Menú Completo (PDF)
+          </a>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -38,7 +48,7 @@ export default function MenuGallery() {
                 alt={item.title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
-                unoptimized // For external placeholder images
+                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                 <h3 className="text-white text-xl font-bold">{item.title}</h3>

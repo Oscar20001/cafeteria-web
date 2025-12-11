@@ -17,38 +17,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Subir a almacenamiento temporal (tmpfiles.org)
-    // Heyzine requiere una URL pública, no acepta subida directa de archivos en este endpoint.
-    console.log('Subiendo a almacenamiento temporal (tmpfiles.org)...');
+    // 1. Subir a almacenamiento temporal (catbox.moe)
+    // Heyzine requiere una URL pública. Usamos catbox.moe que es fiable y devuelve enlace directo.
+    console.log('Subiendo a almacenamiento temporal (catbox.moe)...');
     const tempUploadFormData = new FormData();
-    tempUploadFormData.append('file', file);
+    tempUploadFormData.append('reqtype', 'fileupload');
+    tempUploadFormData.append('fileToUpload', file);
 
-    const tempUploadResponse = await fetch('https://tmpfiles.org/api/v1/upload', {
+    const tempUploadResponse = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
       body: tempUploadFormData,
     });
 
     if (!tempUploadResponse.ok) {
-      console.error('Error tmpfiles:', await tempUploadResponse.text());
+      console.error('Error catbox:', await tempUploadResponse.text());
       return NextResponse.json(
         { error: 'Error al procesar el archivo temporalmente' },
         { status: 502 }
       );
     }
 
-    const tempData = await tempUploadResponse.json();
-    if (tempData.status !== 'success') {
-       console.error('Error tmpfiles data:', tempData);
+    const pdfUrl = await tempUploadResponse.text();
+    
+    if (!pdfUrl.startsWith('http')) {
+       console.error('Error catbox response:', pdfUrl);
        return NextResponse.json(
         { error: 'Error al obtener URL temporal del archivo' },
         { status: 502 }
       );
     }
-
-    let pdfUrl = tempData.data.url;
-    // Convertir a enlace de descarga directa (necesario para que Heyzine lo descargue)
-    // tmpfiles.org devuelve http://tmpfiles.org/ID/file.pdf -> http://tmpfiles.org/dl/ID/file.pdf
-    pdfUrl = pdfUrl.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
     
     console.log('PDF URL temporal generada:', pdfUrl);
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, LogOut, CheckCircle, XCircle, AlertCircle, BarChart, ShoppingBag, Trash2, FileText, TrendingUp, MessageSquare, Crown, Utensils, X } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import AdminMenuManager from '@/components/AdminMenuManager';
 
 interface Reservation {
   _id: string;
@@ -345,7 +346,20 @@ export default function AdminDashboard() {
           >
             Pedidos Rápidos
           </button>
+          {user === 'ceo' && (
+            <button
+              onClick={() => setActiveTab('menu')}
+              className={`pb-2 px-4 font-medium transition-colors ${activeTab === 'menu' ? 'text-amber-600 border-b-2 border-amber-600' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+              Menú Digital
+            </button>
+          )}
         </div>
+
+        {/* MENU MANAGER VIEW */}
+        {activeTab === 'menu' && user === 'ceo' && (
+          <AdminMenuManager />
+        )}
 
         {/* RESERVATIONS VIEW */}
         {activeTab === 'reservations' && (

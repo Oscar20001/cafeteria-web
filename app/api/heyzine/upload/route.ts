@@ -36,6 +36,11 @@ export async function POST(req: NextRequest) {
     }
 
     // URL correcta para subir PDF a Heyzine: https://heyzine.com/api/1/pdf
+    // NOTA: Algunas versiones de la API de Heyzine requieren que la key vaya en el body si es POST
+    // Pero la documentación estándar dice query param.
+    // Vamos a probar enviando la key TAMBIÉN en el FormData por si acaso.
+    heyzineFormData.append('k', apiKey);
+
     const apiUrl = `https://heyzine.com/api/1/pdf?k=${apiKey}`;
 
     console.log('Iniciando subida a Heyzine...');

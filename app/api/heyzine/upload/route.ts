@@ -17,14 +17,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Preparar el FormData para Heyzine
-    const heyzineFormData = new FormData();
-    heyzineFormData.append('pdf', file);
-    // Si Heyzine requiere el filename explícitamente:
-    // heyzineFormData.append('filename', file.name);
+    // 1. Subir a almacenamiento temporal (tmpfiles.org)
+    // Heyzine requiere una URL pública, no acepta subida directa de archivos en este endpoint.
+    console.log('Subiendo a almacenamiento temporal (tmpfiles.org)...');
+    const tempUploadFormData = new FormData();
+    tempUploadFormData.append('file', file);
+
+    const tempUploadResponse = await fetch('https://tmpfiles.org/api/v1/upload', {
+      method: 'POST',
+      body: tempUploadFormData,
+    });
+
+    if (!tempUploadResponse.ok) {
+      console.error('Error tmpfiles:', await tempUploadResponse.text());
+      return NextResponse.json(
+        { error: 'Error al procesar el archivo temporalmente' },
+        { status: 502 }
+      );
+    }
+
+    const tempData = await tempUploadResponse.json();
+    if (tempData.status !== 'success') {
+       console.error('Error tmpfiles data:', tempData);
+       return NextResponse.json(
+        { error: 'Error al obtener URL temporal del archivo' },
+        { status: 502 }
+      );
+    }
+
+    let pdfUrl = tempData.data.url;
+    // Convertir a enlace de descarga directa (necesario para que Heyzine lo descargue)
+    // tmpfiles.org devuelve http://tmpfiles.org/ID/file.pdf -> http://tmpfiles.org/dl/ID/file.pdf
+    pdfUrl = pdfUrl.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+    
+    console.log('PDF URL temporal generada:', pdfUrl);
 
     // 2. Llamar a la API de Heyzine
-    // Intentamos usar la variable de entorno, si no existe, usamos la clave proporcionada como respaldo
     const apiKey = process.env.HEYZINE_API_KEY || 'd475481b4f990c70dee6875ec8e24c7beceaae1d.09f5459c8dfa0a1a';
     
     if (!apiKey) {
@@ -35,19 +63,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // URL correcta para subir PDF a Heyzine: https://heyzine.com/api/1/pdf
-    // NOTA: Algunas versiones de la API de Heyzine requieren que la key vaya en el body si es POST
-    // Pero la documentación estándar dice query param.
-    // Vamos a probar enviando la key TAMBIÉN en el FormData por si acaso.
-    heyzineFormData.append('k', apiKey);
+    // Endpoint correcto: https://heyzine.com/api1/rest
+    // Parámetros: k (api key), pdf (url del pdf)
+    const heyzineUrl = `https://heyzine.com/api1/rest?k=${apiKey}&pdf=${encodeURIComponent(pdfUrl)}`;
 
-    const apiUrl = `https://heyzine.com/api/1/pdf?k=${apiKey}`;
-
-    console.log('Iniciando subida a Heyzine...');
+    console.log('Iniciando conversión en Heyzine...');
     
-    const response = await fetch(apiUrl, {
+    const response = await fetch(heyzineUrl, {
       method: 'POST',
-      body: heyzineFormData,
     });
 
     console.log('Heyzine status:', response.status);

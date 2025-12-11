@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'reservations' | 'orders'>('reservations');
+  const [activeTab, setActiveTab] = useState<'reservations' | 'orders' | 'menu'>('reservations');
   
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);

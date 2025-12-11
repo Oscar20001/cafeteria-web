@@ -96,12 +96,19 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
     console.log('Heyzine success response:', data);
     
+    if (data.error) {
+      return NextResponse.json(
+        { error: `Heyzine reportó un error: ${data.error}` },
+        { status: 502 }
+      );
+    }
+
     const flipbookUrl = data.url || data.link || data.pdf_link; 
 
     if (!flipbookUrl) {
       console.error('Respuesta sin URL:', data);
       return NextResponse.json(
-        { error: 'La respuesta de Heyzine no contenía una URL válida' },
+        { error: `Respuesta inesperada de Heyzine: ${JSON.stringify(data)}` },
         { status: 502 }
       );
     }

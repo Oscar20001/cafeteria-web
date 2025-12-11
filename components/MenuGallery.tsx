@@ -4,34 +4,28 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { X } from 'lucide-react';
-import HotDrinksMenu from './HotDrinksMenu';
+import { MenuConfig, MenuKey } from '@/types/menu';
 
-interface MenuData {
-  menuId: string;
-  heyzineUrl: string;
-}
-
-const STATIC_MENU_ITEMS = [
+const STATIC_MENU_ITEMS: { id: MenuKey; title: string; image: string }[] = [
   { id: 'desayunos', title: 'Desayunos', image: 'https://placehold.co/600x800/png?text=Desayunos' },
   { id: 'comidas', title: 'Comidas', image: 'https://placehold.co/600x800/png?text=Comidas' },
-  { id: 'bebidas-calientes', title: 'Bebidas Calientes', image: 'https://placehold.co/600x800/png?text=Bebidas+Calientes' },
-  { id: 'bebidas-frias', title: 'Bebidas Frías', image: 'https://placehold.co/600x800/png?text=Bebidas+Frias' },
+  { id: 'bebidasCalientes', title: 'Bebidas Calientes', image: 'https://placehold.co/600x800/png?text=Bebidas+Calientes' },
+  { id: 'bebidasFrias', title: 'Bebidas Frías', image: 'https://placehold.co/600x800/png?text=Bebidas+Frias' },
   { id: 'postres', title: 'Postres', image: 'https://placehold.co/600x800/png?text=Postres' },
   { id: 'promociones', title: 'Promociones', image: 'https://placehold.co/600x800/png?text=Promociones' },
 ];
 
 export default function MenuGallery() {
-  const [menus, setMenus] = useState<MenuData[]>([]);
+  const [menuConfigs, setMenuConfigs] = useState<MenuConfig[]>([]);
   const [selectedMenuUrl, setSelectedMenuUrl] = useState<string | null>(null);
-  const [showHotDrinks, setShowHotDrinks] = useState(false);
 
   useEffect(() => {
     const fetchMenus = async () => {
       try {
-        const res = await fetch('/api/menus');
+        const res = await fetch('/api/menu-config');
         if (res.ok) {
           const data = await res.json();
-          setMenus(data);
+          setMenuConfigs(data);
         }
       } catch (error) {
         console.error('Error loading menus:', error);
@@ -40,17 +34,13 @@ export default function MenuGallery() {
     fetchMenus();
   }, []);
 
-  const handleCardClick = (menuId: string) => {
-    if (menuId === 'bebidas-calientes') {
-      setShowHotDrinks(true);
-      return;
-    }
-
-    const menu = menus.find(m => m.menuId === menuId);
-    if (menu && menu.heyzineUrl) {
-      setSelectedMenuUrl(menu.heyzineUrl);
+  const handleCardClick = (key: MenuKey) => {
+    const config = menuConfigs.find(c => c.key === key);
+    
+    if (config && config.heyzineUrl) {
+      setSelectedMenuUrl(config.heyzineUrl);
     } else {
-      alert('Este menú aún no está disponible. Por favor intenta más tarde.');
+      alert('Este menú aún no está configurado.');
     }
   };
 
@@ -91,8 +81,6 @@ export default function MenuGallery() {
           ))}
         </div>
       </div>
-
-      <HotDrinksMenu isOpen={showHotDrinks} onClose={() => setShowHotDrinks(false)} />
 
       {/* Modal for Heyzine Flipbook */}
       <AnimatePresence>

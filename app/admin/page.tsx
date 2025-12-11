@@ -4,7 +4,16 @@ import { useEffect, useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, LogOut, CheckCircle, XCircle, AlertCircle, BarChart, ShoppingBag, Trash2, FileText, TrendingUp, MessageSquare, Crown, Utensils, X } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import AdminMenuManager from '@/components/AdminMenuManager';
+import { MenuConfig, MenuKey } from '@/types/menu';
+
+const MENU_CATEGORIES: MenuConfig[] = [
+  { key: "desayunos", label: "Desayunos", heyzineUrl: "" },
+  { key: "comidas", label: "Comidas", heyzineUrl: "" },
+  { key: "bebidasCalientes", label: "Bebidas Calientes", heyzineUrl: "" },
+  { key: "bebidasFrias", label: "Bebidas Frías", heyzineUrl: "" },
+  { key: "postres", label: "Postres", heyzineUrl: "" },
+  { key: "promociones", label: "Promociones", heyzineUrl: "" },
+];
 
 interface Reservation {
   _id: string;
@@ -60,6 +69,11 @@ export default function AdminDashboard() {
   // Order Filters
   const [orderFilter, setOrderFilter] = useState<'today' | 'week' | 'month'>('today');
 
+  // Menu Config State
+  const [menuConfigs, setMenuConfigs] = useState<MenuConfig[]>(MENU_CATEGORIES);
+  const [menuLoading, setMenuLoading] = useState(false);
+  const [menuMessage, setMenuMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
   // Comment Modal State
   const [selectedComment, setSelectedComment] = useState<{ name: string; comment: string } | null>(null);
 
@@ -85,9 +99,51 @@ export default function AdminDashboard() {
       fetchOrders();
       if (user === 'ceo') {
         fetchStats();
+        fetchMenuConfig();
       }
     }
   }, [user]);
+
+  const fetchMenuConfig = async () => {
+    try {
+      const res = await fetch('/api/menu-config');
+      if (res.ok) {
+        const data: MenuConfig[] = await res.json();
+        // Merge fetched data with base categories to ensure all keys exist
+        setMenuConfigs(prev => prev.map(cat => {
+          const found = data.find(d => d.key === cat.key);
+          return found ? { ...cat, heyzineUrl: found.heyzineUrl } : cat;
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching menu config:', error);
+    }
+  };
+
+  const handleMenuUrlChange = (key: MenuKey, url: string) => {
+    setMenuConfigs(prev => prev.map(c => c.key === key ? { ...c, heyzineUrl: url } : c));
+  };
+
+  const saveMenuConfig = async (key: MenuKey, heyzineUrl: string) => {
+    setMenuLoading(true);
+    setMenuMessage(null);
+    try {
+      const res = await fetch('/api/menu-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, heyzineUrl }),
+      });
+
+      if (!res.ok) throw new Error('Error al guardar');
+      
+      setMenuMessage({ type: 'success', text: 'Menú actualizado correctamente' });
+      setTimeout(() => setMenuMessage(null), 3000);
+    } catch (error) {
+      setMenuMessage({ type: 'error', text: 'Error al guardar la configuración' });
+    } finally {
+      setMenuLoading(false);
+    }
+  };
 
   // Polling for real-time updates (every 30 seconds)
   useEffect(() => {
@@ -358,7 +414,41 @@ export default function AdminDashboard() {
 
         {/* MENU MANAGER VIEW */}
         {activeTab === 'menu' && user === 'ceo' && (
-          <AdminMenuManager />
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-stone-700 mb-6">Configuración de Menús Digitales</h2>
+            
+            {menuMessage && (
+              <div className={`mb-4 p-4 rounded-md ${menuMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {menuMessage.text}
+              </div>
+            )}
+
+            <div className="grid gap-6">
+              {menuConfigs.map((menu) => (
+                <div key={menu.key} className="flex flex-col md:flex-row md:items-end gap-4 p-4 border border-stone-200 rounded-lg bg-stone-50">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      {menu.label}
+                    </label>
+                    <input
+                      type="text"
+                      value={menu.heyzineUrl}
+                      onChange={(e) => handleMenuUrlChange(menu.key, e.target.value)}
+                      placeholder="https://heyzine.com/flip-book/..."
+                      className="w-full p-2 border border-stone-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
+                    />
+                  </div>
+                  <button
+                    onClick={() => saveMenuConfig(menu.key, menu.heyzineUrl)}
+                    disabled={menuLoading}
+                    className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-50 transition-colors h-10"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* RESERVATIONS VIEW */}

@@ -24,64 +24,53 @@ export async function POST(req: NextRequest) {
     // heyzineFormData.append('filename', file.name);
 
     // 2. Llamar a la API de Heyzine
-    // Nota: Verifica la URL exacta en la documentación de Heyzine.
-    // Usualmente es https://heyzine.com/api/1/pdf
-    const heyzineResponse = await fetch('https://heyzine.com/api/1/pdf', {
-      method: 'POST',
-      headers: {
-        // No establecer 'Content-Type': 'multipart/form-data' manualmente con fetch y FormData,
-        // el navegador/node lo hace automáticamente con el boundary correcto.
-        // Solo enviamos la API Key si es requerida en headers o query params.
-        // Según la solicitud del usuario: "Authorization: Bearer process.env.HEYZINE_API_KEY"
-        // Pero muchas APIs de este tipo usan query param ?k=API_KEY.
-        // Seguiré la instrucción del usuario de usar Authorization header si es posible,
-        // pero si la API de Heyzine usa query param, habría que ajustarlo.
-        // Asumiré que el usuario sabe que funciona con Bearer o lo ajustará.
-        // Sin embargo, la mayoría de APIs de flipbook usan ?k=KEY.
-        // Voy a intentar ponerlo en el header como pidió el usuario, pero añadiré un comentario.
-      },
-      body: heyzineFormData,
-    });
-
-    // Si la API de Heyzine requiere la key en la URL (común en estos servicios):
-    // const heyzineUrl = `https://heyzine.com/api/1/pdf?k=${process.env.HEYZINE_API_KEY}`;
-    // const heyzineResponse = await fetch(heyzineUrl, { method: 'POST', body: heyzineFormData });
-
-    // IMPLEMENTACIÓN SEGÚN INSTRUCCIÓN (Header):
-    // Si la API real de Heyzine no soporta Bearer, cambiar a query param.
-    // Para este ejemplo, usaré la instrucción del usuario pero añadiré la key como query param también por seguridad
-    // si el header falla, o viceversa.
-    // Revisando documentación pública rápida de Heyzine (simulada): suelen usar ?k=API_KEY.
-    // Voy a usar la URL con la key en query param que es lo más estándar para Heyzine,
-    // ignorando levemente la instrucción de "Authorization: Bearer" si sé que Heyzine no lo usa así,
-    // PERO el usuario fue específico.
-    // Haré un híbrido: intentaré seguir la instrucción pero dejaré comentado cómo cambiarlo.
-    
-    // CORRECCIÓN: Heyzine API usa `https://heyzine.com/api/1/pdf?k=YOUR_API_KEY`
     const apiKey = process.env.HEYZINE_API_KEY;
+    
+    if (!apiKey) {
+      console.error('HEYZINE_API_KEY no está definida');
+      return NextResponse.json(
+        { error: 'Configuración de servidor incompleta (Falta API Key)' },
+        { status: 500 }
+      );
+    }
+
+    // URL correcta para subir PDF a Heyzine: https://heyzine.com/api/1/pdf
     const apiUrl = `https://heyzine.com/api/1/pdf?k=${apiKey}`;
 
+    console.log('Iniciando subida a Heyzine...');
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       body: heyzineFormData,
     });
 
+    console.log('Heyzine status:', response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error Heyzine:', errorText);
+      console.error('Heyzine error body:', errorText);
+      
+      // Si es 404, es probable que la URL esté mal o la API Key sea inválida para ese endpoint
+      if (response.status === 404) {
+         return NextResponse.json(
+          { error: 'Error de conexión con Heyzine (Endpoint no encontrado o API Key inválida)' },
+          { status: 502 }
+        );
+      }
+
       return NextResponse.json(
-        { error: `Error al subir a Heyzine: ${response.statusText}` },
+        { error: `Error al subir a Heyzine: ${response.status} - ${errorText}` },
         { status: 502 }
       );
     }
 
     const data = await response.json();
+    console.log('Heyzine success response:', data);
     
-    // Heyzine devuelve algo como { "id": "...", "url": "https://heyzine.com/flip-book/..." }
-    // Asegúrate de mapear la respuesta correcta.
-    const flipbookUrl = data.url || data.link; 
+    const flipbookUrl = data.url || data.link || data.pdf_link; 
 
     if (!flipbookUrl) {
+      console.error('Respuesta sin URL:', data);
       return NextResponse.json(
         { error: 'La respuesta de Heyzine no contenía una URL válida' },
         { status: 502 }

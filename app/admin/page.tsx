@@ -70,11 +70,44 @@ export default function AdminDashboard() {
   const [orderFilter, setOrderFilter] = useState<'today' | 'week' | 'month'>('today');
 
   // Menu Config State
-  const [menuConfigs, setMenuConfigs] = useState<MenuConfig[]>(MENU_CATEGORIES);
+  const [selectedMenuKey, setSelectedMenuKey] = useState<MenuKey>('desayunos');
+  const [menuFile, setMenuFile] = useState<File | null>(null);
   const [menuLoading, setMenuLoading] = useState(false);
   const [menuMessage, setMenuMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  // Comment Modal State
+  const handleUploadMenu = async () => {
+    if (!menuFile) return;
+    
+    setMenuLoading(true);
+    setMenuMessage(null);
+
+    const formData = new FormData();
+    formData.append('pdf', menuFile);
+    formData.append('menuId', selectedMenuKey);
+
+    try {
+      const res = await fetch('/api/heyzine/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al subir el menú');
+      }
+
+      setMenuMessage({ 
+        type: 'success', 
+        text: `Menú actualizado correctamente. URL: ${data.menu.heyzineUrl}` 
+      });
+      setMenuFile(null);
+    } catch (error: any) {
+      setMenuMessage({ type: 'error', text: error.message });
+    } finally {
+      setMenuLoading(false);
+    }
+  };
   const [selectedComment, setSelectedComment] = useState<{ name: string; comment: string } | null>(null);
 
   const formatTime = (time: string) => {
@@ -99,51 +132,9 @@ export default function AdminDashboard() {
       fetchOrders();
       if (user === 'ceo') {
         fetchStats();
-        fetchMenuConfig();
       }
     }
   }, [user]);
-
-  const fetchMenuConfig = async () => {
-    try {
-      const res = await fetch('/api/menu-config');
-      if (res.ok) {
-        const data: MenuConfig[] = await res.json();
-        // Merge fetched data with base categories to ensure all keys exist
-        setMenuConfigs(prev => prev.map(cat => {
-          const found = data.find(d => d.key === cat.key);
-          return found ? { ...cat, heyzineUrl: found.heyzineUrl } : cat;
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching menu config:', error);
-    }
-  };
-
-  const handleMenuUrlChange = (key: MenuKey, url: string) => {
-    setMenuConfigs(prev => prev.map(c => c.key === key ? { ...c, heyzineUrl: url } : c));
-  };
-
-  const saveMenuConfig = async (key: MenuKey, heyzineUrl: string) => {
-    setMenuLoading(true);
-    setMenuMessage(null);
-    try {
-      const res = await fetch('/api/menu-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, heyzineUrl }),
-      });
-
-      if (!res.ok) throw new Error('Error al guardar');
-      
-      setMenuMessage({ type: 'success', text: 'Menú actualizado correctamente' });
-      setTimeout(() => setMenuMessage(null), 3000);
-    } catch (error) {
-      setMenuMessage({ type: 'error', text: 'Error al guardar la configuración' });
-    } finally {
-      setMenuLoading(false);
-    }
-  };
 
   // Polling for real-time updates (every 30 seconds)
   useEffect(() => {
@@ -414,39 +405,57 @@ export default function AdminDashboard() {
 
         {/* MENU MANAGER VIEW */}
         {activeTab === 'menu' && user === 'ceo' && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-stone-700 mb-6">Configuración de Menús Digitales</h2>
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
+            <h2 className="text-xl font-semibold text-stone-700 mb-6">Gestor de Menús (Heyzine)</h2>
             
-            {menuMessage && (
-              <div className={`mb-4 p-4 rounded-md ${menuMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                {menuMessage.text}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">
+                  Selecciona el Menú a actualizar
+                </label>
+                <select
+                  value={selectedMenuKey}
+                  onChange={(e) => setSelectedMenuKey(e.target.value as MenuKey)}
+                  className="w-full p-2 border border-stone-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
+                >
+                  {MENU_CATEGORIES.map((cat) => (
+                    <option key={cat.key} value={cat.key}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
 
-            <div className="grid gap-6">
-              {menuConfigs.map((menu) => (
-                <div key={menu.key} className="flex flex-col md:flex-row md:items-end gap-4 p-4 border border-stone-200 rounded-lg bg-stone-50">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-stone-700 mb-1">
-                      {menu.label}
-                    </label>
-                    <input
-                      type="text"
-                      value={menu.heyzineUrl}
-                      onChange={(e) => handleMenuUrlChange(menu.key, e.target.value)}
-                      placeholder="https://heyzine.com/flip-book/..."
-                      className="w-full p-2 border border-stone-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
-                  <button
-                    onClick={() => saveMenuConfig(menu.key, menu.heyzineUrl)}
-                    disabled={menuLoading}
-                    className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-50 transition-colors h-10"
-                  >
-                    Guardar
-                  </button>
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">
+                  Subir PDF del Menú
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setMenuFile(e.target.files?.[0] || null)}
+                  className="w-full p-2 border border-stone-300 rounded-md text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                />
+                <p className="text-xs text-stone-500 mt-1">Solo archivos PDF.</p>
+              </div>
+
+              <button
+                onClick={handleUploadMenu}
+                disabled={menuLoading || !menuFile}
+                className={`w-full py-3 px-4 rounded-md text-white font-bold transition-colors ${
+                  menuLoading || !menuFile
+                    ? 'bg-stone-400 cursor-not-allowed'
+                    : 'bg-amber-600 hover:bg-amber-700'
+                }`}
+              >
+                {menuLoading ? 'Subiendo a Heyzine...' : 'Actualizar Menú'}
+              </button>
+
+              {menuMessage && (
+                <div className={`p-4 rounded-md ${menuMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                  {menuMessage.text}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}

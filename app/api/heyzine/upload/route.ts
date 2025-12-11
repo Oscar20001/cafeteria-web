@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
     // heyzineFormData.append('filename', file.name);
 
     // 2. Llamar a la API de Heyzine
-    const apiKey = process.env.HEYZINE_API_KEY;
+    // Intentamos usar la variable de entorno, si no existe, usamos la clave proporcionada como respaldo
+    const apiKey = process.env.HEYZINE_API_KEY || 'd475481b4f990c70dee6875ec8e24c7beceaae1d.09f5459c8dfa0a1a';
     
     if (!apiKey) {
       console.error('HEYZINE_API_KEY no está definida');

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { X } from 'lucide-react';
+import HotDrinksMenu from './HotDrinksMenu';
 
 interface MenuData {
   menuId: string;
@@ -22,6 +23,7 @@ const STATIC_MENU_ITEMS = [
 export default function MenuGallery() {
   const [menus, setMenus] = useState<MenuData[]>([]);
   const [selectedMenuUrl, setSelectedMenuUrl] = useState<string | null>(null);
+  const [showHotDrinks, setShowHotDrinks] = useState(false);
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -39,6 +41,11 @@ export default function MenuGallery() {
   }, []);
 
   const handleCardClick = (menuId: string) => {
+    if (menuId === 'bebidas-calientes') {
+      setShowHotDrinks(true);
+      return;
+    }
+
     const menu = menus.find(m => m.menuId === menuId);
     if (menu && menu.heyzineUrl) {
       setSelectedMenuUrl(menu.heyzineUrl);
@@ -84,6 +91,8 @@ export default function MenuGallery() {
           ))}
         </div>
       </div>
+
+      <HotDrinksMenu isOpen={showHotDrinks} onClose={() => setShowHotDrinks(false)} />
 
       {/* Modal for Heyzine Flipbook */}
       <AnimatePresence>

@@ -298,7 +298,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-          <h1 className="text-2xl font-bold text-center mb-2 font-serif text-stone-800">Café Alejandría</h1>
+          <h1 className="text-2xl font-bold text-center mb-2 font-serif text-stone-800">Café Soconusco</h1>
           <p className="text-center text-stone-500 mb-8">Panel de Administración</p>
           
           {/* Waiter Quick Access */}

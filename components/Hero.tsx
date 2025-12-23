@@ -50,7 +50,7 @@ export default function Hero() {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="text-5xl md:text-8xl font-bold mb-2 pb-6 font-serif tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 drop-shadow-lg leading-tight"
         >
-          Café Alejandría
+          Café Soconusco
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: 30 }}

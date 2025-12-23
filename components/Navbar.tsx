@@ -39,7 +39,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <Coffee className="h-8 w-8 text-amber-500" />
-              <span className="font-bold text-xl tracking-wider">CAFÉ ALEJANDRÍA</span>
+                <span className="font-bold text-xl tracking-wider">CAFÉ SOCONUSCO</span>
             </Link>
           </div>
           <div className="hidden md:block">

@@ -10,7 +10,7 @@ export default function Footer() {
           
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-bold mb-6 font-serif text-amber-500">Café Alejandría</h3>
+            <h3 className="text-2xl font-bold mb-6 font-serif text-amber-500">Café Soconusco</h3>
             <p className="text-stone-400 mb-6 leading-relaxed">
               Algo Diferente. Una experiencia única en cada taza, preparada con pasión y los mejores granos.
             </p>
@@ -56,7 +56,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-12 text-center text-stone-600 text-sm border-none">
-          <p>© 2025 Café Alejandría. Todos los derechos reservados.</p>
+          <p>© 2025 Café Soconusco. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

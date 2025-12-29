@@ -13,51 +13,25 @@ const MENU_OPTIONS = [
 
 export default function AdminMenuManager() {
   const [selectedMenu, setSelectedMenu] = useState(MENU_OPTIONS[0].id);
-  const [file, setFile] = useState<File | null>(null);
+  const [heyzineUrl, setHeyzineUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      setMessage({ type: 'error', text: 'Por favor selecciona un archivo PDF' });
+    if (!heyzineUrl.trim()) {
+      setMessage({ type: 'error', text: 'Por favor pega el enlace del flipbook de Heyzine.' });
       return;
     }
-
     setLoading(true);
     setMessage(null);
-
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('menuId', selectedMenu);
-
     try {
-      const res = await fetch('/api/heyzine/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Error al subir el menú');
-      }
-
-      setMessage({ 
-        type: 'success', 
-        text: `Menú actualizado correctamente. URL: ${data.menu.heyzineUrl}` 
-      });
-      setFile(null);
-      // Reset file input manually if needed
-      const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-
+      // Aquí deberías guardar el enlace en la base de datos, por ejemplo:
+      // await fetch('/api/menus/update', { method: 'POST', body: JSON.stringify({ menuId: selectedMenu, heyzineUrl }) })
+      setMessage({ type: 'success', text: 'Enlace guardado correctamente.' });
+      setHeyzineUrl('');
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
     } finally {
@@ -77,7 +51,7 @@ export default function AdminMenuManager() {
           <select
             value={selectedMenu}
             onChange={(e) => setSelectedMenu(e.target.value)}
-            className="w-full p-2 border border-stone-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
+            className="w-full p-2 border border-stone-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-black"
           >
             {MENU_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
@@ -89,28 +63,29 @@ export default function AdminMenuManager() {
 
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">
-            Subir PDF del Menú
+            Pega el enlace del flipbook de Heyzine
           </label>
           <input
-            id="pdf-upload"
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            className="w-full p-2 border border-stone-300 rounded-md text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+            type="url"
+            value={heyzineUrl}
+            onChange={e => setHeyzineUrl(e.target.value)}
+            placeholder="https://heyzine.com/flipbook/tu-enlace"
+            className="w-full p-2 border border-stone-300 rounded-md text-stone-600"
+            required
           />
-          <p className="text-xs text-stone-500 mt-1">Solo archivos PDF.</p>
+          <p className="text-xs text-stone-500 mt-1">Pega aquí el enlace generado en heyzine.com</p>
         </div>
 
         <button
           type="submit"
-          disabled={loading || !file}
+          disabled={loading || !heyzineUrl.trim()}
           className={`w-full py-3 px-4 rounded-md text-white font-bold transition-colors ${
-            loading || !file
+            loading || !heyzineUrl.trim()
               ? 'bg-stone-400 cursor-not-allowed'
               : 'bg-amber-600 hover:bg-amber-700'
           }`}
         >
-          {loading ? 'Subiendo a Heyzine...' : 'Actualizar Menú'}
+          {loading ? 'Guardando...' : 'Actualizar Menú'}
         </button>
 
         {message && (

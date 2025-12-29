@@ -58,9 +58,6 @@ export default function AdminMenuManager() {
                 {option.label}
               </option>
             ))}
-          </select>
-        </div>
-
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">
             Pega el enlace del flipbook de Heyzine
@@ -71,6 +68,10 @@ export default function AdminMenuManager() {
             onChange={e => setHeyzineUrl(e.target.value)}
             placeholder="https://heyzine.com/flipbook/tu-enlace"
             className="w-full p-2 border border-stone-300 rounded-md text-stone-600"
+            required
+          />
+          <p className="text-xs text-stone-500 mt-1">Pega aquí el enlace generado en heyzine.com</p>
+        </div>
             required
           />
           <p className="text-xs text-stone-500 mt-1">Pega aquí el enlace generado en heyzine.com</p>

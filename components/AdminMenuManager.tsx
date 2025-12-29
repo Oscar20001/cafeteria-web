@@ -17,8 +17,6 @@ export default function AdminMenuManager() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!heyzineUrl.trim()) {
@@ -42,7 +40,6 @@ export default function AdminMenuManager() {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto mt-10">
       <h2 className="text-2xl font-bold mb-6 text-stone-800">Gestor de Menús (Heyzine)</h2>
-      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -54,10 +51,12 @@ export default function AdminMenuManager() {
             className="w-full p-2 border border-stone-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-black"
           >
             {MENU_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
+              <option key={option.id} value={option.id} className="text-black">
                 {option.label}
               </option>
             ))}
+          </select>
+        </div>
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">
             Pega el enlace del flipbook de Heyzine
@@ -72,11 +71,6 @@ export default function AdminMenuManager() {
           />
           <p className="text-xs text-stone-500 mt-1">Pega aquí el enlace generado en heyzine.com</p>
         </div>
-            required
-          />
-          <p className="text-xs text-stone-500 mt-1">Pega aquí el enlace generado en heyzine.com</p>
-        </div>
-
         <button
           type="submit"
           disabled={loading || !heyzineUrl.trim()}
@@ -88,7 +82,6 @@ export default function AdminMenuManager() {
         >
           {loading ? 'Guardando...' : 'Actualizar Menú'}
         </button>
-
         {message && (
           <div
             className={`p-4 rounded-md ${

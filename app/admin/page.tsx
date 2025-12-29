@@ -407,7 +407,6 @@ export default function AdminDashboard() {
         {activeTab === 'menu' && user === 'ceo' && (
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
             <h2 className="text-xl font-semibold text-stone-700 mb-6">Gestor de Menús (Heyzine)</h2>
-            
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -425,37 +424,20 @@ export default function AdminDashboard() {
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-2">
-                  Subir PDF del Menú
+                  Pega el enlace del flipbook de Heyzine
                 </label>
                 <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setMenuFile(e.target.files?.[0] || null)}
-                  className="w-full p-2 border border-stone-300 rounded-md text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                  type="url"
+                  value={menuFile as any}
+                  onChange={e => setMenuFile(e.target.value as any)}
+                  placeholder="https://heyzine.com/flipbook/tu-enlace"
+                  className="w-full p-2 border border-stone-300 rounded-md text-stone-600"
+                  required
                 />
-                <p className="text-xs text-stone-500 mt-1">Solo archivos PDF.</p>
+                <p className="text-xs text-stone-500 mt-1">Pega aquí el enlace generado en heyzine.com</p>
               </div>
-
-              <button
-                onClick={handleUploadMenu}
-                disabled={menuLoading || !menuFile}
-                className={`w-full py-3 px-4 rounded-md text-white font-bold transition-colors ${
-                  menuLoading || !menuFile
-                    ? 'bg-stone-400 cursor-not-allowed'
-                    : 'bg-amber-600 hover:bg-amber-700'
-                }`}
-              >
-                {menuLoading ? 'Subiendo a Heyzine...' : 'Actualizar Menú'}
-              </button>
-
-              {menuMessage && (
-                <div className={`p-4 rounded-md ${menuMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                  {menuMessage.text}
-                </div>
-              )}
             </div>
           </div>
         )}

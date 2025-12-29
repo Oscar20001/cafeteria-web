@@ -26,8 +26,15 @@ export default function AdminMenuManager() {
     setLoading(true);
     setMessage(null);
     try {
-      // Aquí deberías guardar el enlace en la base de datos, por ejemplo:
-      // await fetch('/api/menus/update', { method: 'POST', body: JSON.stringify({ menuId: selectedMenu, heyzineUrl }) })
+      const res = await fetch('/api/menu-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: selectedMenu, heyzineUrl })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Error al guardar el enlace');
+      }
       setMessage({ type: 'success', text: 'Enlace guardado correctamente.' });
       setHeyzineUrl('');
     } catch (error: any) {
